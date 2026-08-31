@@ -1,7 +1,61 @@
-- Trong khi hoạt động trên toàn bộ project, không được thay đổi/ chỉnh sửa các project vivado, các project phần mềm vivado là dạng như DATN_VIVADO\project_1, còn files RTL thì được chỉnh thoải mái. Riêng những folder như project_1 thì chỉ được đọc log, reports và những thứ liên quan.
-- Sau khi thay đổi RTL, luôn phải thực hiện quá trình mô phỏng (simulation) xác minh được behavior của RTL là đúng chức năng, mô phỏng trong manual_sim.
-- Khi trả lời cho user, bạn luôn phải trả lời những câu 1 nghĩa, mạch lạc, rõ ràng, không lấy phép ẩn dụ/ hoán dụ trong câu trả lời.
-- Tất cả các thay đổi chỉnh sửa đều phải report user in chat.
-- Đường dẫn đến simulation command D:\Xlinx\
-- Nếu có task, phải thực hiện tất cả các task trong 1 lần prompt, không được làm giữa chừng rồi không phản hồi nữa, phải làm xong task.
-- Dự án phải được hoàn thiện theo hướng hoàn hảo nhất, không được né lỗi hiện tại để đạt những thành tựu trước mắt.
+# 1. Phạm vi làm việc và quyền của người dùng
+
+- Codex chỉ được thực hiện công việc trong phạm vi đã thống nhất với user.
+- Codex không được tự tạo hoặc chuyển sang Git branch mới khi chưa có sự cho phép rõ ràng của user.
+- Codex không được tự ý thay đổi source, cấu hình, task, script, project, submodule pointer hoặc artifact mà không thông báo cho user.
+- Mọi thay đổi phải được báo cáo rõ ràng trong chat, bao gồm file đã thay đổi, nội dung thay đổi, lý do và kết quả xác minh.
+- Codex có quyền tranh luận với user để đạt thỏa thuận kỹ thuật cuối cùng. Mọi phản biện, khuyến nghị và kết luận phải dựa trên source, log, report, simulation, measurement, tài liệu kỹ thuật hoặc bằng chứng cụ thể khác. Không được đưa ra nhận định kỹ thuật không có bằng chứng.
+
+# 2. Quyền làm việc với Vivado
+
+- Codex chỉ được chạy simulation, synthesis, implementation hoặc generate bitstream khi user đã cho phép rõ ràng đối với thao tác đó.
+- Codex không được tự động mở, thao tác hoặc chỉnh sửa Vivado project bằng giao diện Vivado hoặc bằng lệnh trực tiếp ngoài workflow script đã được cho phép.
+- Codex chỉ được điều khiển Vivado thông qua các script phù hợp trong `DATN_RTL\DATN_VIVADO\manual_sim`, ví dụ:
+  - `run_phase2a_vpu_spu_xsim.ps1` để chạy simulation;
+  - `run_KV260_build.ps1` để chạy synthesis, implementation và generate bitstream theo workflow của script.
+- Trước khi chạy một script Vivado, Codex phải kiểm tra script, xác định chính xác các giai đoạn mà script sẽ chạy, các source được sử dụng, project đích và các artifact dự kiến được tạo hoặc cập nhật.
+- Script được xem là phương thức tự động hóa tương đương với việc user chọn các chức năng tương ứng trong giao diện Vivado. Vivado được phép tạo hoặc cập nhật log, report, run directory, checkpoint, bitstream và artifact sinh tự động bên trong Vivado project khi user đã cho phép chạy script đó.
+- Việc cho phép Vivado tạo artifact thông qua script không đồng nghĩa với việc cho phép Codex chỉnh sửa thủ công file sinh tự động trong Vivado project.
+- Khi chưa có quyền chạy Vivado, Codex chỉ được đọc source, script, log và report hiện có.
+- Đường dẫn cài đặt Vivado hiện hành là `D:\Xilinx`.
+
+# 3. RTL và xác minh
+
+- Codex chỉ được chỉnh sửa RTL khi task và user cho phép đúng file hoặc đúng phạm vi.
+- Sau mỗi thay đổi RTL có ảnh hưởng chức năng, Codex phải chạy simulation phù hợp trong `DATN_RTL\DATN_VIVADO\manual_sim` sau khi được user cho phép chạy công cụ.
+- Simulation phải kiểm tra hành vi được thay đổi và các đường lân cận có nguy cơ regression.
+- Không được dùng compile thành công thay cho bằng chứng đúng chức năng. Không được dùng simulation thay cho bằng chứng timing closure, bitstream hợp lệ hoặc hoạt động đúng trên board.
+- Không được thay đổi âm thầm AXI map, datatype, signedness, quantization, metadata, ready/valid timing, memory ownership, host-to-RTL contract hoặc protocol/bitstream compatibility.
+
+# 4. Task và bằng chứng
+
+- Codex được phép tạo task mới trong `.codex\inbox` khi cần thiết để xác định rõ mục tiêu, phạm vi, file được phép thay đổi, thao tác bị cấm, bằng chứng đầu vào, validation và acceptance criteria.
+- Task phải có hướng dẫn mạch lạc, khả thi và nhất quán. Không được ghi command gây khó hiểu, không liên quan hoặc không thể tái lập.
+- Không được ghi verdict, root cause, kết quả sửa lỗi, kết quả hiệu năng hoặc trạng thái PASS khi chưa có bằng chứng tương ứng.
+- Suspected cause phải được ghi rõ là chưa xác minh. Chỉ được xác nhận root cause khi source, log, report, simulation, measurement hoặc owner-provided hardware evidence chứng minh được kết luận.
+- Nếu thiếu bằng chứng cần thiết, Codex phải nêu chính xác bằng chứng còn thiếu và giới hạn của kết luận hiện tại.
+- Khi task đã được cho phép và có đủ điều kiện thực hiện, Codex phải làm liên tục đến khi hoàn thành acceptance criteria hoặc gặp blocker thực tế cần thêm quyền, bằng chứng hoặc hành động từ user. Không được dừng giữa chừng mà không báo cáo trạng thái.
+
+# 5. Git và bảo toàn workspace
+
+- Đây là GitHub repository. Codex phải đọc Git status, branch và commit hiện tại trước khi thay đổi.
+- Không được tạo branch, chuyển branch, commit, push, merge, rebase, cập nhật submodule pointer hoặc sửa lịch sử Git khi chưa có sự cho phép rõ ràng của user.
+- Phải bảo toàn toàn bộ thay đổi và file untracked không thuộc phạm vi công việc. Không được ghi đè, xóa, revert hoặc stage rộng các file của user.
+- Không được chạy destructive Git command như `git reset --hard`, `git clean`, force-push hoặc branch deletion khi chưa có yêu cầu và sự cho phép rõ ràng của user.
+- Mọi thao tác Git được phép phải được thông báo cho user trước khi thực hiện và được báo cáo kết quả sau khi thực hiện.
+
+# 6. Chất lượng kỹ thuật và chống regression
+
+- Phải giải quyết nguyên nhân đã được xác minh, không được che lỗi, né lỗi, clamp, thay thế output, dùng fallback hoặc canonicalize kết quả để tạo cảm giác hệ thống đã đúng.
+- Không được tối ưu dựa trên phỏng đoán. Phải đo hoặc thu thập bằng chứng để xác định bottleneck trước khi thay đổi kiến trúc hoặc datapath.
+- Mỗi thay đổi phải bảo toàn chức năng hiện có, kiểm tra các failure mode liên quan và giảm nguy cơ regression.
+- Không được chấp nhận một thay đổi chỉ vì nó giải quyết vấn đề trước mắt nếu thay đổi đó tạo ra lỗi mới, làm sai contract, giảm độ tin cậy hoặc chuyển bottleneck sang đường đã biết mà không có kế hoạch và bằng chứng xử lý.
+- Kết quả hoàn thành phải đáp ứng acceptance criteria, không còn regression đã biết trong phạm vi kiểm tra và phải phân biệt rõ phần đã xác minh với phần vẫn cần board test hoặc bằng chứng bổ sung.
+
+# 7. Cách giao tiếp với user
+
+- Câu trả lời phải rõ nghĩa, mạch lạc, ngắn gọn và dùng thuật ngữ kỹ thuật chính xác. Không dùng ẩn dụ hoặc hoán dụ làm mơ hồ nội dung.
+- Phải phân biệt rõ verified fact, interpretation, assumption và unresolved question.
+- Không được đưa ra suggestion chung chung, không thực tế hoặc không có bằng chứng.
+- Trước khi trả lời, Codex phải kiểm tra lại nội dung ít nhất hai lần để loại bỏ mâu thuẫn, suy đoán không được hỗ trợ và hướng dẫn không thể thực hiện.
+- Không trình bày suy luận nội bộ. Chỉ trình bày kết luận, bằng chứng, trade-off, rủi ro và hành động được khuyến nghị.
